@@ -72,7 +72,21 @@ class BulkUploadViewSet(viewsets.ViewSet):
             result,
             status=status.HTTP_200_OK
         )
-
+    @extend_schema(
+        request={
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "format": "binary"
+                    }
+                },
+                "required": ["file"]
+            }
+        },
+        responses={200: OpenApiTypes.OBJECT}
+        )
     @action(
         detail=False,
         methods=["post"],
@@ -94,7 +108,21 @@ class BulkUploadViewSet(viewsets.ViewSet):
             result,
             status=status.HTTP_200_OK
         )
-
+    @extend_schema(
+            request={
+                "multipart/form-data": {
+                    "type": "object",
+                    "properties": {
+                        "file": {
+                            "type": "string",
+                            "format": "binary"
+                        }
+                    },
+                    "required": ["file"]
+                }
+            },
+            responses={200: OpenApiTypes.OBJECT}
+            )
     @action(
         detail=False,
         methods=["post"],
