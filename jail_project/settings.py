@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'master_data',
     'users',
     'supply_chain',
+    'audit',
 
 ]
 # REST Framework Global Settings
