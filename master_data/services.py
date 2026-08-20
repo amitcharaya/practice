@@ -316,12 +316,12 @@ def bulk_upload_vegetables(uploaded_file):
         }
 
     created_count = save_records(
-        SHG,
+        VegetableMaster,
         records
     )
 
     return {
-        "message": "SHG bulk upload completed successfully.",
+        "message": "VegetableMaster bulk upload completed successfully.",
         "created": created_count,
         "failed": 0,
         "errors": [],
@@ -340,11 +340,26 @@ def bulk_upload_shgs(uploaded_file):
     records = []
     errors = []
 
+    # Build Jail lookup using Jail NAME
+    # Example:
+    # {
+    #     "Central Jail": 1,
+    #     "Ludhiana Jail": 2
+    # }
     existing_jails = {
-        jail.name: jail
+        jail.name.strip(): jail.pk
         for jail in Jail.objects.all()
     }
 
+    # Existing SHGs to prevent duplicate database records
+    existing_shgs = set(
+        SHG.objects.values_list(
+            "name",
+            "jail_id"
+        )
+    )
+
+    # Duplicate SHGs inside uploaded file
     uploaded_shgs = set()
 
     for row_number, row in enumerate(
@@ -358,42 +373,90 @@ def bulk_upload_shgs(uploaded_file):
         if is_empty_row(row):
             continue
 
-        data = row_to_dict(headers, row)
+        data = row_to_dict(
+            headers,
+            row
+        )
 
         try:
+
+            # --------------------------------
+            # Boolean conversion
+            # --------------------------------
             data["is_active"] = normalize_boolean(
                 data.get("is_active")
             )
 
-            jail_name = str(
-                data.get("jail") or ""
-            ).strip()
-
-            if not jail_name:
-                raise ValueError(
-                    "Jail is required."
-                )
-
-            jail = existing_jails.get(jail_name)
-
-            if not jail:
-                raise ValueError(
-                    f"Jail '{jail_name}' does not exist."
-                )
-
-            data["jail"] = jail
-
+            # --------------------------------
+            # SHG name
+            # --------------------------------
             name = str(
                 data.get("name") or ""
             ).strip()
-
-            data["name"] = name
 
             if not name:
                 raise ValueError(
                     "SHG name is required."
                 )
 
+            data["name"] = name
+
+            # --------------------------------
+            # Jail name from Excel
+            # --------------------------------
+            jail_name = str(
+                data.get("jail") or ""
+            ).strip()
+
+            if not jail_name:
+                raise ValueError(
+                    "Jail name is required."
+                )
+
+            # --------------------------------
+            # Find corresponding Jail PK
+            # --------------------------------
+            jail_pk = existing_jails.get(
+                jail_name
+            )
+
+            if not jail_pk:
+                raise ValueError(
+                    f"Jail '{jail_name}' does not exist."
+                )
+
+            # IMPORTANT:
+            # Serializer expects Jail PK,
+            # not Jail object.
+            data["jail"] = jail_pk
+
+            # --------------------------------
+            # Duplicate check in database
+            # --------------------------------
+            duplicate_key = (
+                name,
+                jail_pk
+            )
+
+            if duplicate_key in existing_shgs:
+                raise ValueError(
+                    f"SHG '{name}' already exists "
+                    f"for Jail '{jail_name}'."
+                )
+
+            # --------------------------------
+            # Duplicate check in uploaded file
+            # --------------------------------
+            if duplicate_key in uploaded_shgs:
+                raise ValueError(
+                    f"Duplicate SHG '{name}' "
+                    f"for Jail '{jail_name}' "
+                    "in uploaded file."
+                )
+
+            # --------------------------------
+            # Serializer validation
+            # --------------------------------
             serializer = SHGBulkUploadSerializer(
                 data=data
             )
@@ -406,6 +469,10 @@ def bulk_upload_shgs(uploaded_file):
                 serializer.validated_data
             )
 
+            uploaded_shgs.add(
+                duplicate_key
+            )
+
         except Exception as exc:
 
             errors.append({
@@ -413,27 +480,39 @@ def bulk_upload_shgs(uploaded_file):
                 "error": str(exc)
             })
 
+    # ----------------------------------------
+    # Atomic behaviour:
+    # If ANY row fails, save NOTHING
+    # ----------------------------------------
     if errors:
+
         return {
-            "message": "Bulk upload failed. No records were saved.",
+            "message": (
+                "Bulk upload failed. "
+                "No records were saved."
+            ),
             "created": 0,
             "failed": len(errors),
             "errors": errors,
         }
 
+    # ----------------------------------------
+    # Save all records
+    # ----------------------------------------
     created_count = save_records(
         SHG,
         records
     )
 
     return {
-        "message": "SHG bulk upload completed successfully.",
+        "message": (
+            "SHG bulk upload completed "
+            "successfully."
+        ),
         "created": created_count,
         "failed": 0,
         "errors": [],
     }
-
-
 
 
 def save_records(model, records):
