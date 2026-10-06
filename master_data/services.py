@@ -1,15 +1,15 @@
 from openpyxl import load_workbook
 from rest_framework.exceptions import ValidationError
 from django.db import transaction
-from .models import Jail, SHG, VegetableMaster
+from .models import Hotel, SHG, VegetableMaster
 from .serializers import (
-    JailBulkUploadSerializer,
+    HotelBulkUploadSerializer,
     SHGBulkUploadSerializer,
     VegetableBulkUploadSerializer,
 )
 
 
-JAIL_HEADERS = [
+HOTEL_HEADERS = [
     "name",
     "location",
     "is_active",

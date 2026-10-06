@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Jail, SHG, VegetableMaster
+from .models import Hotel, SHG, VegetableMaster
 
 
 class VegetableMasterSerializer(serializers.ModelSerializer):
@@ -9,19 +9,19 @@ class VegetableMasterSerializer(serializers.ModelSerializer):
 
 
 class SHGSerializer(serializers.ModelSerializer):
-    jail_name = serializers.CharField(source='jail.name', read_only=True)
+    hotel_name = serializers.CharField(source='hotel.name', read_only=True)
 
     class Meta:
         model = SHG
 
-        fields = ['id', 'name', 'jail', 'jail_name', 'contact_person', 'is_active']
+        fields = ['id', 'name', 'hotel', 'hotel_name', 'contact_person', 'is_active']
 
 
-class JailSerializer(serializers.ModelSerializer):
+class HotelSerializer(serializers.ModelSerializer):
     shgs = SHGSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Jail
+        model = Hotel
         fields = [
             'id',
             'name',
@@ -31,10 +31,10 @@ class JailSerializer(serializers.ModelSerializer):
         ]
 
 
-class JailBulkUploadSerializer(serializers.ModelSerializer):
+class HotelBulkUploadSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Jail
+        model = Hotel
         fields = [
             "name",
             "location",
@@ -45,7 +45,7 @@ class JailBulkUploadSerializer(serializers.ModelSerializer):
 class SHGBulkUploadSerializer(serializers.ModelSerializer):
 
     jail = serializers.PrimaryKeyRelatedField(
-        queryset=Jail.objects.all()
+        queryset=Hotel.objects.all()
     )
 
     class Meta:

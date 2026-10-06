@@ -1,6 +1,6 @@
 from django.db import models
 
-class Jail(models.Model):
+class Hotel(models.Model):
     name = models.CharField(max_length=255, unique=True)
     location = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
@@ -10,7 +10,7 @@ class Jail(models.Model):
 
 class SHG(models.Model):
     name = models.CharField(max_length=255)
-    jail = models.ForeignKey(Jail, on_delete=models.CASCADE, related_name='shgs')
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='shgs')
     contact_person = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
 

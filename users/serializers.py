@@ -5,7 +5,7 @@ from .models import User
 import pyotp
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
-from master_data.models import Jail, SHG
+from master_data.models import Hotel, SHG
 import qrcode
 import base64
 from io import BytesIO
@@ -80,13 +80,13 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     
     password = serializers.CharField(write_only=True)
-    jail = serializers.PrimaryKeyRelatedField(queryset=Jail.objects.all(), required=False, allow_null=True)
+    hotel = serializers.PrimaryKeyRelatedField(queryset=Hotel.objects.all(), required=False, allow_null=True)
     shg = serializers.PrimaryKeyRelatedField(queryset=SHG.objects.all(), required=False, allow_null=True)
    
     class Meta:
         model = User
         # ADD 'is_active' to this list below:
-        fields = ['id', 'username', 'email', 'role', 'jail', 'shg', 'password', 'is_active']
+        fields = ['id', 'username', 'email', 'role', 'hotel', 'shg', 'password', 'is_active']
         read_only_fields = ['id', 'is_active'] # Making is_active read-only is good practice here
         extra_kwargs = {
             'password': {'write_only': True}

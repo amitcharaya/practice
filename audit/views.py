@@ -10,7 +10,27 @@ from .permissions import IsAuditViewer
 
 
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
+)
 
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List audit logs",
+        description=(
+            "Returns audit records for authorized "
+            "users."
+        ),
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve audit log",
+        description=(
+            "Returns a single immutable audit record."
+        ),
+    ),
+)
 
 class AuditLogViewSet(
     viewsets.ReadOnlyModelViewSet

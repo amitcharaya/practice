@@ -11,7 +11,7 @@ class Role(models.TextChoices):
 class User(AbstractUser):
     role = models.CharField(max_length=5, choices=Role.choices)
     totp_secret = models.CharField(max_length=32, blank=True, null=True)  # For Google Authenticator
-    jail = models.ForeignKey('master_data.Jail', on_delete=models.SET_NULL, null=True, blank=True)
+    Hotel = models.ForeignKey('master_data.Hotel', on_delete=models.SET_NULL, null=True, blank=True)
     shg = models.ForeignKey('master_data.SHG', on_delete=models.SET_NULL, null=True, blank=True)
 
 class AuditLog(models.Model):

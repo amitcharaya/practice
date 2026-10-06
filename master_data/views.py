@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from .models import Jail, SHG, VegetableMaster
-from .serializers import JailSerializer, SHGSerializer, VegetableMasterSerializer
+from .models import Hotel, SHG, VegetableMaster
+from .serializers import HotelSerializer, SHGSerializer, VegetableMasterSerializer
 from .permissions import IsSuperAdminOrReadOnly
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
@@ -157,8 +157,8 @@ class SHGViewSet(viewsets.ModelViewSet):
     permission_classes = [IsSuperAdminOrReadOnly]
 
 
-class JailViewSet(viewsets.ModelViewSet):
-    queryset = Jail.objects.prefetch_related('shgs').all()
-    serializer_class = JailSerializer
+class HotelViewSet(viewsets.ModelViewSet):
+    queryset = Hotel.objects.prefetch_related('shgs').all()
+    serializer_class = HotelSerializer
     permission_classes = [IsSuperAdminOrReadOnly]
 

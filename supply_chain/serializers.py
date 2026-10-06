@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Demand, DemandItem
-from master_data.models import Jail, SHG, VegetableMaster
+from master_data.models import Hotel, SHG, VegetableMaster
 from django.db import transaction
 #Now create the DemandItemSerializer.
 class DemandItemSerializer(serializers.ModelSerializer):
@@ -54,8 +54,8 @@ class DemandItemSerializer(serializers.ModelSerializer):
 
 class DemandSerializer(serializers.ModelSerializer):
 
-    jail = serializers.PrimaryKeyRelatedField(
-    queryset=Jail.objects.filter(
+    hotel = serializers.PrimaryKeyRelatedField(
+    queryset=hotel.objects.filter(
         is_active=True
     )
     shg = serializers.PrimaryKeyRelatedField(
@@ -69,8 +69,8 @@ class DemandSerializer(serializers.ModelSerializer):
         many=True
     )
 
-    jail_name = serializers.CharField(
-        source="jail.name",
+    hotel_name = serializers.CharField(
+        source="hotel.name",
         read_only=True
     )
 
@@ -90,8 +90,8 @@ class DemandSerializer(serializers.ModelSerializer):
 
         fields = [
             "id",
-            "jail",
-            "jail_name",
+            "hotel",
+            "hotel_name",
             "shg",
             "shg_name",
             "created_by",
@@ -110,7 +110,7 @@ class DemandSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
             "updated_at",
-            "jail_name",
+            "hotel_name",
             "shg_name",
         ]
 
@@ -143,17 +143,17 @@ class DemandSerializer(serializers.ModelSerializer):
                 )
             })
 
-        jail = attrs.get("jail")
+        hotel = attrs.get("hotel")
         shg = attrs.get("shg")
 
-        if jail and shg:
+        if hotel and shg:
 
-            if shg.jail_id != jail.id:
+            if shg.hotel_id != hotel.id:
 
                 raise serializers.ValidationError({
                     "shg": (
                         "Selected SHG does not belong "
-                        "to the selected Jail."
+                        "to the selected Hotel."
                     )
                 })
 
