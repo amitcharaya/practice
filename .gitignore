@@ -1,4 +1,6 @@
 jail_project/__pycache__/
- master_data/__pycache__/
+master_data/__pycache__/
 supply_chain/__pycache__/
- users/__pycache__/
+users/__pycache__/
+*/__pycache__/
+*/migrations/
