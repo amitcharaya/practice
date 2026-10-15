@@ -1,8 +1,11 @@
 from rest_framework import serializers
-
+from django.utils import timezone
 from .models import Demand, DemandItem
 from master_data.models import Hotel, SHG, VegetableMaster
 from django.db import transaction
+
+
+
 #Now create the DemandItemSerializer.
 class DemandItemSerializer(serializers.ModelSerializer):
 
@@ -55,16 +58,15 @@ class DemandItemSerializer(serializers.ModelSerializer):
 class DemandSerializer(serializers.ModelSerializer):
 
     hotel = serializers.PrimaryKeyRelatedField(
-    queryset=hotel.objects.filter(
+    queryset= Hotel.objects.filter(
         is_active=True
-    )
+    ))
     shg = serializers.PrimaryKeyRelatedField(
         queryset=SHG.objects.filter(
             is_active=True
         )
     )
-
-)
+    
     items = DemandItemSerializer(
         many=True
     )
@@ -115,6 +117,19 @@ class DemandSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        """
+        Object-level validation to enforce cross-field business logic.
+        """
+        target_date = attrs.get('target_date')
+        
+        # Ensure the date is in the future
+        if target_date and target_date <= timezone.now().date():
+            # Passing a dictionary to ValidationError assigns the error 
+            # to the specific field in the JSON response payload.
+            raise serializers.ValidationError({
+                "target_date": "Target delivery date must be at least one day in the future."
+            })
+            
 
         items = attrs.get("items", [])
 
