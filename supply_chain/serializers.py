@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Demand, DemandItem
+from .models import Demand, DemandItem,Invoice
 from master_data.models import Hotel, SHG, VegetableMaster
 from django.db import transaction
 
@@ -28,15 +28,15 @@ class DemandItemSerializer(serializers.ModelSerializer):
             "vegetable",
             "vegetable_name",
             "quantity",
-            "confirmed_quantity"
+            "confirmed_quantity",
             "price",
-            "amount",
+            
         ]
 
         read_only_fields = [
             "id",
             "vegetable_name",
-            "amount",
+            
         ]
     def validate_quantity(self, value):
 
@@ -205,3 +205,56 @@ class DemandSerializer(serializers.ModelSerializer):
                 )
 
         return demand
+
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = ['id', 'order', 'shg_invoice_file', 'shg_amount', 'status']
+
+    def validate_shg_invoice_file(self, value):
+        """
+        Enforce strict validation on the uploaded invoice document.
+        The 'value' parameter is an instance of Django's UploadedFile.
+        """
+        # 1. Enforce a 5MB File Size Limit (5 * 1024 * 1024 bytes)
+        max_file_size = 5242880  
+        if value.size > max_file_size:
+            raise serializers.ValidationError("Invoice file size cannot exceed 5MB.")
+
+        # 2. Enforce File Extension
+        if not value.name.lower().endswith('.pdf'):
+            raise serializers.ValidationError("Only PDF documents are accepted for invoices.")
+            
+        # 3. Enforce MIME Content Type (Secondary Security Check)
+        if value.content_type != 'application/pdf':
+            raise serializers.ValidationError("Invalid file format. The file content must be a PDF.")
+
+        return value
+
+
+    def validate(self, attrs):
+# We use self.instance to check if we are updating an existing record
+        if self.instance:
+            current_status = self.instance.status
+            new_status = attrs.get('status', current_status)
+
+            # Prevent illegal state transitions
+        if current_status == 'SUBMITTED' and new_status not in ['VERIFIED_HU', 'REJECTED']:
+                raise serializers.ValidationError({
+                "status": f"Illegal transition. Cannot move from {current_status} to {new_status}."
+                })
+                
+        if current_status == 'VERIFIED_HU' and new_status not in ['APPROVED_HA', 'REJECTED']:
+                raise serializers.ValidationError({
+                "status": "A verified invoice can only transition to Approved or Rejected."
+                })
+                
+                # If the status is moving to APPROVED, enforce that amount is finalized
+        if new_status == 'APPROVED_HA' and not attrs.get('shg_amount') and not self.instance.shg_amount:
+                raise serializers.ValidationError({
+                    "shg_amount": "Financial amount must be finalized before approval."
+                })
+                
+        return attrs
