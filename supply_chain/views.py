@@ -14,3 +14,9 @@ class ReadCreateDemandViewSet(mixins.ListModelMixin,
     queryset = Demand.objects.all()
     serializer_class = DemandSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+
+        serializer.save(
+            created_by=self.request.user
+        )
