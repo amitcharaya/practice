@@ -1,14 +1,16 @@
 ## Using Serializers in the User Module
-
-from rest_framework import serializers
-from .models import User
-import pyotp
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework import serializers
-from master_data.models import Hotel, SHG
-import qrcode
 import base64
 from io import BytesIO
+import pyotp
+import qrcode
+from rest_framework import serializers
+from .models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from master_data.models import Hotel, SHG
+
+
+
 
 
 
