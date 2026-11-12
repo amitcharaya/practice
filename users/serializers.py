@@ -47,7 +47,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 totp = pyotp.TOTP(secret)
                 uri = totp.provisioning_uri(
                     name=user.username,
-                    issuer_name="JailApp"
+                    issuer_name="HotelSupplyAPI"
                 )
 
                 qr = qrcode.make(uri)
@@ -76,6 +76,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['two_fa_configured'] = True
         data['role'] = user.role
         data['username'] = user.username
+        data['hotel_id'] = user.Hotel.id if user.Hotel else None
+        data['shg_id'] = user.shg.id if user.shg else None
 
         return data
    
@@ -98,6 +100,13 @@ class UserSerializer(serializers.ModelSerializer):
            
         password = validated_data.pop('password', None)
         user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
         if password:
             user.set_password(password)
             user.save()
